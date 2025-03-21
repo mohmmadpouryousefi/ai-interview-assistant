@@ -1,109 +1,75 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import interviewService, { InterviewSummary } from "../services/interviews";
 
-// Mock interview data
-const MOCK_INTERVIEWS = [
-  {
-    id: "1",
-    date: new Date(2023, 5, 15).toISOString(),
-    title: "Frontend Developer Interview",
-    score: 85,
-    duration: 23,
-    questions: 8,
-  },
-  {
-    id: "2",
-    date: new Date(2023, 5, 10).toISOString(),
-    title: "React Skills Assessment",
-    score: 78,
-    duration: 18,
-    questions: 6,
-  },
-  {
-    id: "3",
-    date: new Date(2023, 5, 5).toISOString(),
-    title: "JavaScript Fundamentals",
-    score: 92,
-    duration: 15,
-    questions: 5,
-  },
-  {
-    id: "4",
-    date: new Date(2023, 4, 28).toISOString(),
-    title: "Web Development Concepts",
-    score: 88,
-    duration: 30,
-    questions: 10,
-  },
-  {
-    id: "5",
-    date: new Date(2023, 4, 15).toISOString(),
-    title: "CSS and UI Design",
-    score: 75,
-    duration: 20,
-    questions: 7,
-  },
-];
-
-export default function History() {
-  const { loading, isAuthenticated } = useAuth();
+const History = () => {
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const [interviews, setInterviews] = useState(MOCK_INTERVIEWS);
+  const [interviews, setInterviews] = useState<InterviewSummary[]>([]);
   const [selectedInterview, setSelectedInterview] = useState<string | null>(
     null
   );
   const [sortBy, setSortBy] = useState<"date" | "score">("date");
   const [filterText, setFilterText] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Redirect if not authenticated
+  // Check authentication and load history
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/auth");
+    if (!loading) {
+      if (!isAuthenticated) {
+        router.push("/auth");
+        return;
+      }
+
+      // Load interview history
+      const history = interviewService.getInterviewHistory();
+      setInterviews(history);
+      setIsLoading(false);
     }
   }, [loading, isAuthenticated, router]);
 
   // Filter and sort interviews
   const filteredInterviews = interviews
     .filter((interview) =>
-      interview.title.toLowerCase().includes(filterText.toLowerCase())
+      interview.jobPosition.toLowerCase().includes(filterText.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === "date") {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        return (
+          new Date(b.interviewDate).getTime() -
+          new Date(a.interviewDate).getTime()
+        );
       }
-      return b.score - a.score;
+      return b.overallScore - a.overallScore;
     });
 
+  // Handle interview deletion
   const handleDeleteInterview = (id: string) => {
-    setInterviews(interviews.filter((interview) => interview.id !== id));
-    if (selectedInterview === id) {
-      setSelectedInterview(null);
+    if (confirm("Are you sure you want to delete this interview?")) {
+      const deleted = interviewService.deleteInterview(id);
+      if (deleted) {
+        setInterviews(interviews.filter((interview) => interview.id !== id));
+        if (selectedInterview === id) {
+          setSelectedInterview(null);
+        }
+      }
     }
   };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex justify-center items-center">
-        <div className="text-teal-600">Loading...</div>
-      </div>
-    );
-  }
 
   // Get the selected interview details
   const interviewDetail = selectedInterview
     ? interviews.find((i) => i.id === selectedInterview)
     : null;
+
+  if (loading || isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -215,8 +181,15 @@ export default function History() {
                   {filteredInterviews.length === 0 ? (
                     <div className="p-8 text-center">
                       <p className="text-gray-500">
-                        No interviews found. Try adjusting your search.
+                        No interviews found. Try adjusting your search or start
+                        a new interview.
                       </p>
+                      <Link
+                        href="/interview"
+                        className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700"
+                      >
+                        Start New Interview
+                      </Link>
                     </div>
                   ) : (
                     <ul className="divide-y divide-gray-200">
@@ -233,10 +206,12 @@ export default function History() {
                             <div className="flex items-center justify-between">
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">
-                                  {interview.title}
+                                  {interview.jobPosition}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {formatDate(interview.date)}
+                                  {new Date(
+                                    interview.interviewDate
+                                  ).toLocaleDateString()}
                                 </p>
                               </div>
                               <div className="flex items-center">
@@ -244,16 +219,16 @@ export default function History() {
                                   <p
                                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     ${
-                                      interview.score >= 90
+                                      interview.overallScore >= 90
                                         ? "bg-green-100 text-green-800"
-                                        : interview.score >= 80
+                                        : interview.overallScore >= 80
                                         ? "bg-blue-100 text-blue-800"
-                                        : interview.score >= 70
+                                        : interview.overallScore >= 70
                                         ? "bg-yellow-100 text-yellow-800"
                                         : "bg-red-100 text-red-800"
                                     }`}
                                   >
-                                    {interview.score}%
+                                    {interview.overallScore}%
                                   </p>
                                 </div>
                               </div>
@@ -273,7 +248,7 @@ export default function History() {
                                       clipRule="evenodd"
                                     />
                                   </svg>
-                                  {interview.duration} minutes
+                                  {interview.duration}
                                 </p>
                                 <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
                                   <svg
@@ -284,7 +259,8 @@ export default function History() {
                                   >
                                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                                   </svg>
-                                  {interview.questions} questions
+                                  {interview.answeredQuestions} of{" "}
+                                  {interview.totalQuestions} questions
                                 </p>
                               </div>
                             </div>
@@ -333,7 +309,7 @@ export default function History() {
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium text-gray-900">
-                        {interviewDetail.title}
+                        {interviewDetail.jobPosition}
                       </h3>
                       <button
                         onClick={() =>
@@ -362,7 +338,9 @@ export default function History() {
                           DATE
                         </p>
                         <p className="mt-1 text-sm text-gray-900">
-                          {formatDate(interviewDetail.date)}
+                          {new Date(
+                            interviewDetail.interviewDate
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
@@ -372,16 +350,16 @@ export default function History() {
                         <p
                           className={`mt-1 text-sm font-semibold 
                           ${
-                            interviewDetail.score >= 90
+                            interviewDetail.overallScore >= 90
                               ? "text-green-600"
-                              : interviewDetail.score >= 80
+                              : interviewDetail.overallScore >= 80
                               ? "text-blue-600"
-                              : interviewDetail.score >= 70
+                              : interviewDetail.overallScore >= 70
                               ? "text-yellow-600"
                               : "text-red-600"
                           }`}
                         >
-                          {interviewDetail.score}%
+                          {interviewDetail.overallScore}%
                         </p>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
@@ -389,15 +367,24 @@ export default function History() {
                           DURATION
                         </p>
                         <p className="mt-1 text-sm text-gray-900">
-                          {interviewDetail.duration} minutes
+                          {interviewDetail.duration}
                         </p>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-xs font-medium text-gray-500">
+                          EXPERIENCE
+                        </p>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {interviewDetail.experienceLevel}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg col-span-2">
+                        <p className="text-xs font-medium text-gray-500">
                           QUESTIONS
                         </p>
                         <p className="mt-1 text-sm text-gray-900">
-                          {interviewDetail.questions} answered
+                          {interviewDetail.answeredQuestions} of{" "}
+                          {interviewDetail.totalQuestions} answered
                         </p>
                       </div>
                     </div>
@@ -410,31 +397,26 @@ export default function History() {
                         <div
                           className={`h-2.5 rounded-full 
                             ${
-                              interviewDetail.score >= 90
+                              interviewDetail.overallScore >= 90
                                 ? "bg-green-600"
-                                : interviewDetail.score >= 80
+                                : interviewDetail.overallScore >= 80
                                 ? "bg-blue-500"
-                                : interviewDetail.score >= 70
+                                : interviewDetail.overallScore >= 70
                                 ? "bg-yellow-500"
                                 : "bg-red-500"
                             }`}
-                          style={{ width: `${interviewDetail.score}%` }}
+                          style={{ width: `${interviewDetail.overallScore}%` }}
                         ></div>
                       </div>
                     </div>
 
                     <div className="mt-6">
-                      <button
+                      <Link
+                        href={`/interview-summary?id=${interviewDetail.id}`}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                        onClick={() => {
-                          // In a real app, this would navigate to a detailed review page
-                          alert(
-                            "This would navigate to a detailed review in a complete app"
-                          );
-                        }}
                       >
                         View Detailed Feedback
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -445,4 +427,6 @@ export default function History() {
       </main>
     </div>
   );
-}
+};
+
+export default History;

@@ -8,6 +8,18 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          "Inter",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
+        display: ["Poppins", "system-ui", "sans-serif"],
+        body: ["Inter", "system-ui", "sans-serif"],
+        heading: ["Poppins", "system-ui", "sans-serif"],
+      },
       keyframes: {
         float: {
           "0%, 100%": { transform: "translateY(0) rotate(0deg)" },

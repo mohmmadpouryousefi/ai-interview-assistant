@@ -17,6 +17,15 @@ export default function Profile() {
   const [industry, setIndustry] = useState("Technology");
   const [experienceLevel, setExperienceLevel] = useState("Mid-level");
 
+  // Password strength state
+  const [passwordFeedback, setPasswordFeedback] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
   // UI state
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -38,6 +47,29 @@ export default function Profile() {
       setEmail(user.email || "");
     }
   }, [user]);
+
+  // Check password strength
+  const checkPasswordStrength = (pass: string) => {
+    setPasswordFeedback({
+      length: pass.length >= 8,
+      uppercase: /[A-Z]/.test(pass),
+      lowercase: /[a-z]/.test(pass),
+      number: /[0-9]/.test(pass),
+      special: /[^A-Za-z0-9]/.test(pass),
+    });
+  };
+
+  // Password validation
+  const isPasswordValid = () => {
+    const { length, uppercase, lowercase, number, special } = passwordFeedback;
+    return length && uppercase && lowercase && number && special;
+  };
+
+  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pass = e.target.value;
+    setNewPassword(pass);
+    checkPasswordStrength(pass);
+  };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +95,13 @@ export default function Profile() {
     setSuccessMessage("");
     setErrorMessage("");
 
+    if (!isPasswordValid()) {
+      setErrorMessage(
+        "Please use a stronger password that meets all requirements"
+      );
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setErrorMessage("New passwords do not match");
       return;
@@ -79,6 +118,13 @@ export default function Profile() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setPasswordFeedback({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false,
+      });
     } catch {
       setErrorMessage("Failed to change password. Please try again.");
     } finally {
@@ -393,10 +439,181 @@ export default function Profile() {
                         type="password"
                         id="newPassword"
                         value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        onChange={handleNewPasswordChange}
+                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$"
+                        title="Password must be at least 8 characters and include uppercase, lowercase, number, and special character"
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                         required
                       />
+
+                      {/* Password strength indicators */}
+                      <div className="mt-3 space-y-2">
+                        <p className="text-xs font-medium text-gray-700">
+                          Password must contain:
+                        </p>
+                        <ul className="grid grid-cols-2 gap-1 text-xs">
+                          <li
+                            className={`flex items-center ${
+                              passwordFeedback.length
+                                ? "text-green-600"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            <svg
+                              className={`h-4 w-4 mr-1 ${
+                                passwordFeedback.length
+                                  ? "text-green-500"
+                                  : "text-gray-400"
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              {passwordFeedback.length ? (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              ) : (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                  clipRule="evenodd"
+                                />
+                              )}
+                            </svg>
+                            At least 8 characters
+                          </li>
+                          <li
+                            className={`flex items-center ${
+                              passwordFeedback.uppercase
+                                ? "text-green-600"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            <svg
+                              className={`h-4 w-4 mr-1 ${
+                                passwordFeedback.uppercase
+                                  ? "text-green-500"
+                                  : "text-gray-400"
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              {passwordFeedback.uppercase ? (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              ) : (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                  clipRule="evenodd"
+                                />
+                              )}
+                            </svg>
+                            Uppercase letter
+                          </li>
+                          <li
+                            className={`flex items-center ${
+                              passwordFeedback.lowercase
+                                ? "text-green-600"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            <svg
+                              className={`h-4 w-4 mr-1 ${
+                                passwordFeedback.lowercase
+                                  ? "text-green-500"
+                                  : "text-gray-400"
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              {passwordFeedback.lowercase ? (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              ) : (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                  clipRule="evenodd"
+                                />
+                              )}
+                            </svg>
+                            Lowercase letter
+                          </li>
+                          <li
+                            className={`flex items-center ${
+                              passwordFeedback.number
+                                ? "text-green-600"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            <svg
+                              className={`h-4 w-4 mr-1 ${
+                                passwordFeedback.number
+                                  ? "text-green-500"
+                                  : "text-gray-400"
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              {passwordFeedback.number ? (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              ) : (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                  clipRule="evenodd"
+                                />
+                              )}
+                            </svg>
+                            Number
+                          </li>
+                          <li
+                            className={`flex items-center ${
+                              passwordFeedback.special
+                                ? "text-green-600"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            <svg
+                              className={`h-4 w-4 mr-1 ${
+                                passwordFeedback.special
+                                  ? "text-green-500"
+                                  : "text-gray-400"
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              {passwordFeedback.special ? (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              ) : (
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                                  clipRule="evenodd"
+                                />
+                              )}
+                            </svg>
+                            Special character
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                     <div>
                       <label
@@ -425,8 +642,8 @@ export default function Profile() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isSaving}
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                      disabled={isSaving || !isPasswordValid()}
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-70"
                     >
                       {isSaving ? "Updating..." : "Update Password"}
                     </button>

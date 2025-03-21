@@ -8,6 +8,7 @@ dotenv.config();
 
 // Import routes
 import authRoutes from "../src/routes/auth.routes";
+import aiRoutes from "../src/routes/ai.routes";
 
 // Initialize Express
 const app: Application = express();
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
 
 // Default route
 app.get("/", (req: Request, res: Response) => {

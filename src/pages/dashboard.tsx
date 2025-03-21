@@ -171,79 +171,68 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white p-6 rounded-3xl shadow-md">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Link
                 href="/interview"
-                className="flex flex-col items-center p-4 bg-teal-50 rounded-xl hover:bg-teal-100 transition duration-150"
+                className="bg-blue-500 text-white p-4 rounded-lg transition-colors hover:bg-blue-600 flex items-center"
               >
-                <div className="p-2 bg-teal-100 rounded-full mb-3">
-                  <svg
-                    className="w-6 h-6 text-teal-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-teal-700">
-                  Start Interview
-                </span>
-              </Link>
-              <Link
-                href="/profile"
-                className="flex flex-col items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition duration-150"
-              >
-                <div className="p-2 bg-blue-100 rounded-full mb-3">
-                  <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-blue-700">
-                  Edit Profile
-                </span>
+                <svg
+                  className="w-5 h-5 mr-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  ></path>
+                </svg>
+                Start New Interview
               </Link>
               <Link
                 href="/history"
-                className="flex flex-col items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition duration-150"
+                className="bg-green-500 text-white p-4 rounded-lg transition-colors hover:bg-green-600 flex items-center"
               >
-                <div className="p-2 bg-purple-100 rounded-full mb-3">
-                  <svg
-                    className="w-6 h-6 text-purple-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-purple-700">
-                  View History
-                </span>
+                <svg
+                  className="w-5 h-5 mr-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  ></path>
+                </svg>
+                View Interview History
+              </Link>
+              <Link
+                href="/profile"
+                className="bg-purple-500 text-white p-4 rounded-lg transition-colors hover:bg-purple-600 flex items-center"
+              >
+                <svg
+                  className="w-5 h-5 mr-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  ></path>
+                </svg>
+                Edit Profile
               </Link>
             </div>
           </div>
