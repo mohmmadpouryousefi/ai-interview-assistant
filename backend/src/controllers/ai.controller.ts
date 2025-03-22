@@ -50,7 +50,7 @@ export const generateQuestions = async (req: Request, res: Response) => {
     const prompt = `Generate ${count} professional interview questions for a ${
       experienceLevel || "mid-level"
     } ${jobPosition} position. 
-    The questions should be challenging but fair, and should assess both technical skills and soft skills relevant to this role.
+    The questions must be challenging but fair, and must assess both technical skills and soft skills relevant to this role.
     Format the output as a JSON array of question objects with "question" and "category" fields. Categories can be "technical", "behavioral", or "role-specific".`;
 
     try {

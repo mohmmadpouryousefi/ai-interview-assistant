@@ -156,14 +156,14 @@ const History = () => {
                     <div className="flex items-center">
                       <label
                         htmlFor="sortBy"
-                        className="text-sm font-medium text-gray-700 mr-2"
+                        className="text-sm font-medium text-gray-700 mr-2 whitespace-nowrap"
                       >
                         Sort by:
                       </label>
                       <select
                         id="sortBy"
                         name="sortBy"
-                        className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
+                        className="block w-52 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
                         value={sortBy}
                         onChange={(e) =>
                           setSortBy(e.target.value as "date" | "score")

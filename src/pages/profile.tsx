@@ -25,6 +25,8 @@ export default function Profile() {
     number: false,
     special: false,
   });
+  const [passwordsMatch, setPasswordsMatch] = useState(false);
+  const [currentPasswordError, setCurrentPasswordError] = useState("");
 
   // UI state
   const [isEditing, setIsEditing] = useState(false);
@@ -69,6 +71,17 @@ export default function Profile() {
     const pass = e.target.value;
     setNewPassword(pass);
     checkPasswordStrength(pass);
+    // Check if passwords match when new password changes
+    setPasswordsMatch(pass === confirmPassword && pass !== "");
+  };
+
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const confirmPass = e.target.value;
+    setConfirmPassword(confirmPass);
+    // Check if passwords match when confirm password changes
+    setPasswordsMatch(newPassword === confirmPass && newPassword !== "");
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -94,6 +107,13 @@ export default function Profile() {
     e.preventDefault();
     setSuccessMessage("");
     setErrorMessage("");
+    setCurrentPasswordError("");
+
+    // Verify current password is not empty
+    if (!currentPassword.trim()) {
+      setCurrentPasswordError("Current password is required");
+      return;
+    }
 
     if (!isPasswordValid()) {
       setErrorMessage(
@@ -110,8 +130,21 @@ export default function Profile() {
     setIsSaving(true);
 
     try {
-      // In a real app, call your API to change the password
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      // In a real app, call your API to verify current password and change the password
+      // For demo purposes, we'll simulate the password verification
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulated password verification - in a real app, this would be validated on the server
+          // For demo, we'll assume the current password should be "Password123!"
+          const correctCurrentPassword = "Password123!";
+
+          if (currentPassword !== correctCurrentPassword) {
+            reject(new Error("Current password is incorrect"));
+          } else {
+            resolve(null);
+          }
+        }, 1000);
+      });
 
       setSuccessMessage("Password changed successfully!");
       setIsChangingPassword(false);
@@ -125,8 +158,16 @@ export default function Profile() {
         number: false,
         special: false,
       });
-    } catch {
-      setErrorMessage("Failed to change password. Please try again.");
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "Current password is incorrect") {
+          setCurrentPasswordError(error.message);
+        } else {
+          setErrorMessage(error.message);
+        }
+      } else {
+        setErrorMessage("Failed to change password. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -423,10 +464,22 @@ export default function Profile() {
                         type="password"
                         id="currentPassword"
                         value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        onChange={(e) => {
+                          setCurrentPassword(e.target.value);
+                          setCurrentPasswordError("");
+                        }}
+                        className={`mt-1 block w-full px-3 py-2 border ${
+                          currentPasswordError
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-teal-500 focus:border-teal-500"
+                        } rounded-md shadow-sm focus:outline-none sm:text-sm`}
                         required
                       />
+                      {currentPasswordError && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {currentPasswordError}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label
@@ -626,10 +679,24 @@ export default function Profile() {
                         type="password"
                         id="confirmPassword"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        onChange={handleConfirmPasswordChange}
+                        className={`mt-1 block w-full px-3 py-2 border ${
+                          confirmPassword && !passwordsMatch
+                            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:ring-teal-500 focus:border-teal-500"
+                        } rounded-md shadow-sm focus:outline-none sm:text-sm`}
                         required
                       />
+                      {confirmPassword && !passwordsMatch && (
+                        <p className="mt-1 text-sm text-red-600">
+                          Passwords do not match
+                        </p>
+                      )}
+                      {confirmPassword && passwordsMatch && (
+                        <p className="mt-1 text-sm text-green-600">
+                          Passwords match
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="mt-6 flex justify-end space-x-3">
@@ -642,7 +709,9 @@ export default function Profile() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isSaving || !isPasswordValid()}
+                      disabled={
+                        isSaving || !isPasswordValid() || !passwordsMatch
+                      }
                       className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-70"
                     >
                       {isSaving ? "Updating..." : "Update Password"}
